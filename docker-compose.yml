@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  email-service:
+    build: .
+    container_name: email-service
+    image: "email"
+    depends_on:
+      - db-email
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RMQ_HOST: ${RMQ_HOST}
+      RMQ_USERNAME: ${RMQ_USERNAME}
+      RMQ_PASSWORD: ${RMQ_PASSWORD}
+      RMQ_EXCHANGE_NAME: ${RMQ_EXCHANGE_NAME}
+      RMQ_EXCHANGE_KIND: ${RMQ_EXCHANGE_KIND}
+    env_file:
+      - .env
+    networks:
+      - todo-backend
+  
+  db-email:
+    container_name: db-email
+    image: postgres:15.2
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - todo-db-consume:/var/lib/postgresql/data
+    networks:
+      - todo-backend
+
+networks:
+  todo-backend:
+    name: todo-backend
+    driver: bridge
+    external: true
+
+volumes:
+  todo-db-consume:
+    name: todo-db-consume
